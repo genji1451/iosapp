@@ -1,6 +1,13 @@
-import React from 'react';
-import { View, Text, StyleSheet, SafeAreaView, TouchableOpacity } from 'react-native';
-import { colors, typography, spacing } from '../../theme';
+import React, { useState } from 'react';
+import {
+  View,
+  Text,
+  StyleSheet,
+  TouchableOpacity,
+  SafeAreaView,
+  ScrollView,
+} from 'react-native';
+import { colors, spacing, typography } from '../../theme';
 
 const answers = [
   { id: 1, text: 'Вариант 1' },
@@ -12,27 +19,46 @@ const answers = [
 ];
 
 export default function LessonScreen() {
+  const [isPlaying, setIsPlaying] = useState(false);
+  const currentExercise = 3;
+  const totalExercises = 5;
+
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.header}>
-        <View style={styles.progressBar}>
-          <View style={styles.progressFill} />
-        </View>
-        <Text style={styles.progressText}>1/10</Text>
+        <Text style={styles.progress}>
+          Упражнение {currentExercise} из {totalExercises}
+        </Text>
+        <TouchableOpacity style={styles.infoButton}>
+          <Text style={styles.infoButtonText}>Описание</Text>
+        </TouchableOpacity>
       </View>
 
-      <View style={styles.content}>
-        <TouchableOpacity style={styles.speakerButton}>
-          <Text style={styles.speakerIcon}>🔊</Text>
-        </TouchableOpacity>
+      <View style={styles.statusContainer}>
+        <View style={[styles.statusIndicator, styles.completed]} />
+        <View style={[styles.statusIndicator, styles.completed]} />
+        <View style={[styles.statusIndicator, styles.current]} />
+        <View style={[styles.statusIndicator, styles.pending]} />
+        <View style={[styles.statusIndicator, styles.pending]} />
+      </View>
 
-        <View style={styles.grid}>
-          {answers.map((answer) => (
-            <TouchableOpacity key={answer.id} style={styles.answerButton}>
-              <Text style={styles.answerText}>{answer.text}</Text>
-            </TouchableOpacity>
-          ))}
-        </View>
+      <View style={styles.playButtonContainer}>
+        <TouchableOpacity
+          style={[styles.playButton, isPlaying && styles.playingButton]}
+          onPress={() => setIsPlaying(!isPlaying)}
+        >
+          <Text style={styles.playButtonText}>
+            {isPlaying ? '⏸' : '▶️'}
+          </Text>
+        </TouchableOpacity>
+      </View>
+
+      <View style={styles.answersGrid}>
+        {answers.map((answer) => (
+          <TouchableOpacity key={answer.id} style={styles.answerButton}>
+            <Text style={styles.answerText}>{answer.text}</Text>
+          </TouchableOpacity>
+        ))}
       </View>
     </SafeAreaView>
   );
@@ -44,60 +70,83 @@ const styles = StyleSheet.create({
     backgroundColor: colors.background,
   },
   header: {
-    padding: spacing.md,
-  },
-  progressBar: {
-    height: 8,
-    backgroundColor: colors.border,
-    borderRadius: 4,
-    marginBottom: spacing.xs,
-  },
-  progressFill: {
-    width: '10%',
-    height: '100%',
-    backgroundColor: colors.primary,
-    borderRadius: 4,
-  },
-  progressText: {
-    ...typography.body,
-    color: colors.textLight,
-    textAlign: 'center',
-  },
-  content: {
-    flex: 1,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
     padding: spacing.lg,
   },
-  speakerButton: {
+  progress: {
+    ...typography.h2,
+    color: colors.text,
+  },
+  infoButton: {
+    padding: spacing.sm,
+    backgroundColor: colors.secondary,
+    borderRadius: 8,
+  },
+  infoButtonText: {
+    color: colors.background,
+    ...typography.button,
+  },
+  statusContainer: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    padding: spacing.md,
+    gap: spacing.sm,
+  },
+  statusIndicator: {
+    width: 12,
+    height: 12,
+    borderRadius: 6,
+  },
+  completed: {
+    backgroundColor: colors.success,
+  },
+  current: {
+    backgroundColor: colors.primary,
+  },
+  pending: {
+    backgroundColor: colors.border,
+  },
+  playButtonContainer: {
+    alignItems: 'center',
+    marginVertical: spacing.xl,
+  },
+  playButton: {
     width: 80,
     height: 80,
     borderRadius: 40,
     backgroundColor: colors.primary,
     alignItems: 'center',
     justifyContent: 'center',
-    alignSelf: 'center',
-    marginBottom: spacing.xl,
   },
-  speakerIcon: {
+  playingButton: {
+    backgroundColor: colors.secondary,
+  },
+  playButtonText: {
     fontSize: 32,
   },
-  grid: {
+  answersGrid: {
     flexDirection: 'row',
     flexWrap: 'wrap',
+    padding: spacing.md,
     justifyContent: 'space-between',
   },
   answerButton: {
     width: '48%',
+    aspectRatio: 1,
     backgroundColor: colors.background,
     borderRadius: 12,
-    padding: spacing.md,
     marginBottom: spacing.md,
-    borderWidth: 1,
-    borderColor: colors.border,
     alignItems: 'center',
     justifyContent: 'center',
+    borderWidth: 1,
+    borderColor: colors.border,
   },
   answerText: {
-    ...typography.button,
+    ...typography.body,
     color: colors.text,
+    textAlign: 'center',
+    padding: spacing.md,
   },
 }); 

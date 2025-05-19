@@ -7,18 +7,25 @@ import {
   SafeAreaView,
   ScrollView,
 } from 'react-native';
+import { useNavigation } from '@react-navigation/native';
+import { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import { RootStackParamList } from '../../navigation/types';
 import { colors, spacing, typography, shadows } from '../../theme';
 
+type NavigationProp = NativeStackNavigationProp<RootStackParamList>;
+
 const modes = [
-  { id: 1, title: 'Слова' },
-  { id: 2, title: 'Фразы' },
-  { id: 3, title: 'Диалоги' },
-  { id: 4, title: 'Грамматика' },
-  { id: 5, title: 'Тесты' },
-  { id: 6, title: 'Практика' },
+  { id: 1, title: 'Слова', icon: '📝' },
+  { id: 2, title: 'Фразы', icon: '💬' },
+  { id: 3, title: 'Диалоги', icon: '👥' },
+  { id: 4, title: 'Грамматика', icon: '📚' },
+  { id: 5, title: 'Тесты', icon: '🧠', onPress: 'TestMenu' },
+  { id: 6, title: 'Практика', icon: '🎯' },
 ];
 
 export default function ModeSelectScreen() {
+  const navigation = useNavigation<NavigationProp>();
+
   return (
     <SafeAreaView style={styles.container}>
       <ScrollView style={styles.scrollView}>
@@ -31,7 +38,16 @@ export default function ModeSelectScreen() {
 
         <View style={styles.grid}>
           {modes.map((mode) => (
-            <TouchableOpacity key={mode.id} style={styles.modeButton}>
+            <TouchableOpacity
+              key={mode.id}
+              style={styles.modeButton}
+              onPress={() => {
+                if (mode.onPress) {
+                  navigation.navigate(mode.onPress as any);
+                }
+              }}
+            >
+              <Text style={styles.modeIcon}>{mode.icon}</Text>
               <Text style={styles.modeButtonText}>{mode.title}</Text>
             </TouchableOpacity>
           ))}
@@ -83,6 +99,10 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     ...shadows.small,
+  },
+  modeIcon: {
+    fontSize: 32,
+    marginBottom: spacing.sm,
   },
   modeButtonText: {
     color: colors.background,

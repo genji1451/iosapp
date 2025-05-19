@@ -22,8 +22,13 @@ export default function AuthScreen() {
   const [password, setPassword] = useState('');
 
   const handleSubmit = () => {
-    // В реальном приложении здесь была бы логика авторизации
-    navigation.replace('MainTabs');
+    if (isLogin) {
+      // Если это вход, переходим на главный экран
+      navigation.replace('MainTabs');
+    } else {
+      // Если это регистрация, переходим на экран оплаты
+      navigation.replace('Payment');
+    }
   };
 
   return (
@@ -71,7 +76,7 @@ export default function AuthScreen() {
         />
 
         <Button
-          title="Продолжить"
+          title={isLogin ? "Войти" : "Зарегистрироваться"}
           onPress={handleSubmit}
           style={styles.submitButton}
         />

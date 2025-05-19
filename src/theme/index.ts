@@ -1,14 +1,14 @@
 export const colors = {
-  primary: '#58CC02',
-  secondary: '#1CB0F6',
-  background: '#fff',
-  text: '#4B4B4B',
-  textLight: '#AFAFAF',
-  border: '#E5E5E5',
-  error: '#FF4B4B',
-  success: '#58CC02',
+  primary: '#4CAF50',
+  secondary: '#2196F3',
+  background: '#FFFFFF',
+  text: '#000000',
+  textLight: '#666666',
+  border: '#E0E0E0',
+  error: '#F44336',
+  success: '#4CAF50',
   warning: '#FFC800',
-  splashBackground: '#1CB0F6',
+  splashBackground: '#2196F3',
 };
 
 export const spacing = {

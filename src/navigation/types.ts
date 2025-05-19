@@ -5,6 +5,9 @@ export type RootStackParamList = {
   Auth: undefined;
   Payment: undefined;
   Test: undefined;
+  TestMenu: undefined;
+  GDSTest: undefined;
+  TestResult: { score: number };
   MainTabs: NavigatorScreenParams<MainTabParamList>;
 };
 
