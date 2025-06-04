@@ -24,9 +24,6 @@ export default function TestMenuScreen() {
           <Text style={styles.backButton}>←</Text>
         </TouchableOpacity>
         <Text style={styles.title}>Я-СЛЫШУ</Text>
-        <TouchableOpacity style={styles.infoButton}>
-          <Text style={styles.infoButtonText}>Описание</Text>
-        </TouchableOpacity>
       </View>
 
       <ScrollView style={styles.content}>
@@ -66,15 +63,6 @@ const styles = StyleSheet.create({
   title: {
     ...typography.h1,
     color: colors.text,
-  },
-  infoButton: {
-    padding: spacing.sm,
-    backgroundColor: colors.secondary,
-    borderRadius: 8,
-  },
-  infoButtonText: {
-    color: colors.background,
-    ...typography.button,
   },
   content: {
     flex: 1,

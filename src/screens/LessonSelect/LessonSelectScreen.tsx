@@ -1,31 +1,48 @@
 import React from 'react';
 import { View, Text, StyleSheet, SafeAreaView, ScrollView, TouchableOpacity } from 'react-native';
+import { useNavigation } from '@react-navigation/native';
+import { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import { RootStackParamList } from '../../navigation/types';
 import { colors, typography, spacing } from '../../theme';
 
+type NavigationProp = NativeStackNavigationProp<RootStackParamList>;
+
 const lessons = [
-  { id: 1, title: 'Урок 1', progress: 0 },
-  { id: 2, title: 'Урок 2', progress: 0 },
-  { id: 3, title: 'Урок 3', progress: 0 },
-  { id: 4, title: 'Урок 4', progress: 0 },
-  { id: 5, title: 'Урок 5', progress: 0 },
+  { id: 1, title: 'Вербальный тренажёр', progress: 0, isVerbal: true },
+  { id: 2, title: 'Интонационный тренажёр', progress: 0, isIntonation: true },
 ];
 
 export default function LessonSelectScreen() {
+  const navigation = useNavigation<NavigationProp>();
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.header}>
-        <Text style={styles.title}>Уроки</Text>
-        <TouchableOpacity style={styles.infoButton}>
-          <Text style={styles.infoButtonText}>Описание</Text>
-        </TouchableOpacity>
+        <Text style={styles.title}>Тесты</Text>
       </View>
 
       <ScrollView style={styles.scrollView}>
         {lessons.map((lesson) => (
-          <TouchableOpacity key={lesson.id} style={styles.lessonCard}>
+          <TouchableOpacity
+            key={lesson.id}
+            style={styles.lessonCard}
+            onPress={() => {
+              if (lesson.isVerbal) {
+                navigation.navigate('VerbalTrainerMenu');
+              } else if (lesson.isIntonation) {
+                navigation.navigate('IntonationTrainerMenu');
+              }
+            }}
+          >
             <View style={styles.lessonInfo}>
               <Text style={styles.lessonTitle}>{lesson.title}</Text>
-              <Text style={styles.lessonDescription}>Тренировка слуха</Text>
+              <Text style={styles.lessonDescription}>
+                {lesson.isVerbal 
+                  ? 'Модуль тренировки речи' 
+                  : lesson.isIntonation 
+                    ? 'Модуль тренировки интонации'
+                    : 'Тренировка слуха'
+                }
+              </Text>
             </View>
             <View style={styles.progressCircle}>
               <Text style={styles.progressText}>{lesson.progress}%</Text>
@@ -51,15 +68,6 @@ const styles = StyleSheet.create({
   title: {
     ...typography.h1,
     color: colors.text,
-  },
-  infoButton: {
-    padding: spacing.sm,
-    backgroundColor: colors.secondary,
-    borderRadius: 8,
-  },
-  infoButtonText: {
-    color: colors.background,
-    ...typography.button,
   },
   scrollView: {
     flex: 1,
@@ -98,6 +106,6 @@ const styles = StyleSheet.create({
   },
   progressText: {
     color: colors.background,
-    fontWeight: 'bold',
+    fontWeight: '600' as const,
   },
 }); 

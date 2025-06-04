@@ -6,6 +6,8 @@ import {
   SafeAreaView,
   TouchableOpacity,
   ScrollView,
+  ViewStyle,
+  TextStyle,
 } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
@@ -48,9 +50,6 @@ export default function GDSTestScreen() {
           <Text style={styles.backButton}>←</Text>
         </TouchableOpacity>
         <Text style={styles.title}>GDS-15</Text>
-        <TouchableOpacity style={styles.infoButton}>
-          <Text style={styles.infoButtonText}>Описание</Text>
-        </TouchableOpacity>
       </View>
 
       <View style={styles.content}>
@@ -71,12 +70,12 @@ export default function GDSTestScreen() {
           <Button
             title="Да"
             onPress={() => handleAnswer(true)}
-            style={[styles.answerButton, styles.yesButton]}
+            style={styles.yesButton}
           />
           <Button
             title="Нет"
             onPress={() => handleAnswer(false)}
-            style={[styles.answerButton, styles.noButton]}
+            style={styles.noButton}
           />
         </View>
       </View>
@@ -102,15 +101,6 @@ const styles = StyleSheet.create({
   title: {
     ...typography.h1,
     color: colors.text,
-  },
-  infoButton: {
-    padding: spacing.sm,
-    backgroundColor: colors.secondary,
-    borderRadius: 8,
-  },
-  infoButtonText: {
-    color: colors.background,
-    ...typography.button,
   },
   content: {
     flex: 1,
@@ -145,13 +135,10 @@ const styles = StyleSheet.create({
   buttonsContainer: {
     gap: spacing.md,
   },
-  answerButton: {
-    width: '100%',
-  },
   yesButton: {
     backgroundColor: colors.success,
-  },
+  } as ViewStyle,
   noButton: {
     backgroundColor: colors.error,
-  },
+  } as ViewStyle,
 }); 

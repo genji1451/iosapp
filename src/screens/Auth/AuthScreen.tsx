@@ -21,13 +21,17 @@ export default function AuthScreen() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
 
-  const handleSubmit = () => {
-    if (isLogin) {
-      // Если это вход, переходим на главный экран
-      navigation.replace('MainTabs');
-    } else {
-      // Если это регистрация, переходим на экран оплаты
-      navigation.replace('Payment');
+  const handleSubmit = async () => {
+    try {
+      if (isLogin) {
+        // Если это вход, переходим на главный экран
+        navigation.navigate('MainTabs');
+      } else {
+        // Если это регистрация, переходим к GDS скринингу
+        navigation.navigate('GDSScreening');
+      }
+    } catch (error) {
+      console.error('Auth error:', error);
     }
   };
 

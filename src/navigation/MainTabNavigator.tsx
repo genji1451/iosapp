@@ -3,7 +3,7 @@ import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { MainTabParamList } from './types';
 import ModeSelectScreen from '../screens/ModeSelect/ModeSelectScreen';
 import LessonSelectScreen from '../screens/LessonSelect/LessonSelectScreen';
-import LessonScreen from '../screens/Lesson/LessonScreen';
+import TestMenuScreen from '../screens/TestMenu/TestMenuScreen';
 import ProfileScreen from '../screens/Profile/ProfileScreen';
 import { Text } from 'react-native';
 import { colors } from '../theme';
@@ -28,8 +28,8 @@ export const MainTabNavigator = () => {
         name="ModeSelect"
         component={ModeSelectScreen}
         options={{
-          tabBarLabel: 'Режимы',
-          tabBarIcon: ({ color }) => <Text style={{ color, fontSize: 24 }}>🎯</Text>,
+          tabBarLabel: 'Главная',
+          tabBarIcon: ({ color }) => <Text style={{ color, fontSize: 24 }}>🏠</Text>,
         }}
       />
       <Tab.Screen
@@ -41,11 +41,11 @@ export const MainTabNavigator = () => {
         }}
       />
       <Tab.Screen
-        name="Lesson"
-        component={LessonScreen}
+        name="TestMenu"
+        component={TestMenuScreen}
         options={{
-          tabBarLabel: 'Урок',
-          tabBarIcon: ({ color }) => <Text style={{ color, fontSize: 24 }}>🎧</Text>,
+          tabBarLabel: 'Тесты',
+          tabBarIcon: ({ color }) => <Text style={{ color, fontSize: 24 }}>🧠</Text>,
         }}
       />
       <Tab.Screen
