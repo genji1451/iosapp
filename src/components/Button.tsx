@@ -1,57 +1,40 @@
 import React from 'react';
-import { TouchableOpacity, Text, StyleSheet, ViewStyle, TextStyle } from 'react-native';
-import { colors, typography } from '../theme';
+import { StyleProp, ViewStyle } from 'react-native';
+import { Button as PaperButton, useTheme } from 'react-native-paper';
 
 interface ButtonProps {
   title: string;
   onPress: () => void;
   variant?: 'primary' | 'secondary';
-  style?: ViewStyle;
+  style?: StyleProp<ViewStyle>;
+  icon?: string;
+  loading?: boolean;
+  disabled?: boolean;
 }
 
-export const Button = ({ title, onPress, variant = 'primary', style }: ButtonProps) => {
+export const Button = ({
+  title,
+  onPress,
+  variant = 'primary',
+  style,
+  icon,
+  loading,
+  disabled,
+}: ButtonProps) => {
+  const theme = useTheme();
+  const isSecondary = variant === 'secondary';
   return (
-    <TouchableOpacity
-      style={[
-        styles.button,
-        variant === 'primary' ? styles.primaryButton : styles.secondaryButton,
-        style,
-      ]}
+    <PaperButton
+      mode={isSecondary ? 'outlined' : 'contained'}
       onPress={onPress}
+      style={style}
+      icon={icon}
+      loading={loading}
+      disabled={disabled}
+      buttonColor={isSecondary ? undefined : theme.colors.primary}
+      textColor={isSecondary ? theme.colors.primary : theme.colors.onPrimary}
     >
-      <Text
-        style={[
-          styles.text,
-          variant === 'primary' ? styles.primaryText : styles.secondaryText,
-        ]}
-      >
-        {title}
-      </Text>
-    </TouchableOpacity>
+      {title}
+    </PaperButton>
   );
 };
-
-const styles = StyleSheet.create({
-  button: {
-    paddingVertical: 12,
-    paddingHorizontal: 24,
-    borderRadius: 12,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  primaryButton: {
-    backgroundColor: colors.primary,
-  },
-  secondaryButton: {
-    backgroundColor: colors.secondary,
-  },
-  text: {
-    ...typography.button,
-  },
-  primaryText: {
-    color: colors.background,
-  },
-  secondaryText: {
-    color: colors.background,
-  },
-}); 

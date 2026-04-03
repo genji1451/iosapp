@@ -1,64 +1,46 @@
 import React from 'react';
-import {
-  View,
-  Text,
-  StyleSheet,
-  TouchableOpacity,
-  SafeAreaView,
-  Alert,
-  Clipboard,
-  Platform,
-} from 'react-native';
+import { View, StyleSheet, ScrollView, Alert, Clipboard } from 'react-native';
 import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import { RootStackParamList } from '../../navigation/types';
-import { colors, typography, spacing } from '../../theme';
+import { TestTabParamList } from '../../navigation/TestTabNavigator';
+import { spacing, radii, shadows, colors as appColors } from '../../theme';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import { Text, Button, Card, useTheme } from 'react-native-paper';
+import { LinearGradient } from 'expo-linear-gradient';
 import * as MailComposer from 'expo-mail-composer';
-import { Button } from '../../components/Button';
+import { BackHeader } from '../../components/ui/BackHeader';
 
-type NavigationProp = NativeStackNavigationProp<RootStackParamList>;
-type TestResultRouteProp = RouteProp<RootStackParamList, 'TestResult'>;
+type NavigationProp = NativeStackNavigationProp<TestTabParamList>;
+type TestResultRouteProp = RouteProp<TestTabParamList, 'TestResult'>;
 
 export default function TestResultScreen() {
   const navigation = useNavigation<NavigationProp>();
   const route = useRoute<TestResultRouteProp>();
+  const theme = useTheme();
   const { score } = route.params;
 
-  const getInterpretation = (score: number) => {
-    if (score <= 5) return 'Нормальное состояние';
-    if (score <= 9) return 'Легкая депрессия';
-    if (score <= 11) return 'Умеренная депрессия';
+  const getInterpretation = (s: number) => {
+    if (s <= 5) return 'Нормальное состояние';
+    if (s <= 9) return 'Легкая депрессия';
+    if (s <= 11) return 'Умеренная депрессия';
     return 'Тяжелая депрессия';
   };
 
   const handleSendEmail = async () => {
     try {
       const isAvailable = await MailComposer.isAvailableAsync();
-      
       if (!isAvailable) {
-        Alert.alert(
-          'Почтовый сервис недоступен',
-          'Хотите скопировать результаты в буфер обмена?',
-          [
-            {
-              text: 'Отмена',
-              style: 'cancel',
-            },
-            {
-              text: 'Скопировать',
-              onPress: handleCopyToClipboard,
-            },
-          ]
-        );
+        Alert.alert('Почтовый сервис недоступен', 'Скопировать результаты в буфер обмена?', [
+          { text: 'Отмена', style: 'cancel' },
+          { text: 'Скопировать', onPress: handleCopyToClipboard },
+        ]);
         return;
       }
-
       const result = await MailComposer.composeAsync({
         recipients: ['doctor@example.com'],
         subject: 'Результаты теста GDS-15',
         body: `Результаты теста GDS-15:\n\nБалл: ${score} из 15\nИнтерпретация: ${getInterpretation(score)}`,
       });
-
       if (result.status === 'sent') {
         Alert.alert('Успешно', 'Результаты отправлены');
       } else {
@@ -66,20 +48,10 @@ export default function TestResultScreen() {
       }
     } catch (error) {
       console.error('Error sending email:', error);
-      Alert.alert(
-        'Ошибка отправки',
-        'Не удалось отправить результаты. Хотите скопировать их в буфер обмена?',
-        [
-          {
-            text: 'Отмена',
-            style: 'cancel',
-          },
-          {
-            text: 'Скопировать',
-            onPress: handleCopyToClipboard,
-          },
-        ]
-      );
+      Alert.alert('Ошибка отправки', 'Скопировать результаты в буфер обмена?', [
+        { text: 'Отмена', style: 'cancel' },
+        { text: 'Скопировать', onPress: handleCopyToClipboard },
+      ]);
     }
   };
 
@@ -90,92 +62,55 @@ export default function TestResultScreen() {
   };
 
   return (
-    <SafeAreaView style={styles.container}>
-      <View style={styles.header}>
-        <TouchableOpacity onPress={() => navigation.goBack()}>
-          <Text style={styles.backButton}>←</Text>
-        </TouchableOpacity>
-        <Text style={styles.title}>Результаты</Text>
-      </View>
+    <SafeAreaView style={[styles.safe, { backgroundColor: theme.colors.background }]} edges={['top', 'bottom']}>
+      <BackHeader title="Результаты GDS-15" onBack={() => navigation.goBack()} />
 
-      <View style={styles.content}>
-        <View style={styles.scoreContainer}>
-          <Text style={styles.scoreText}>{score}</Text>
-          <Text style={styles.scoreLabel}>из 15</Text>
-        </View>
+      <ScrollView contentContainerStyle={styles.scroll} showsVerticalScrollIndicator={false}>
+        <LinearGradient colors={[appColors.gradientStart, appColors.gradientEnd]} style={styles.hero}>
+          <Text variant="displayMedium" style={styles.bigScore}>
+            {score}
+          </Text>
+          <Text variant="titleMedium" style={styles.sub}>
+            из 15 баллов
+          </Text>
+        </LinearGradient>
 
-        <Text style={styles.interpretation}>
-          {getInterpretation(score)}
-        </Text>
+        <Card style={[styles.card, shadows.soft]} mode="elevated">
+          <Card.Content>
+            <Text variant="headlineSmall" style={{ textAlign: 'center', color: theme.colors.onSurface }}>
+              {getInterpretation(score)}
+            </Text>
+            <Text variant="bodyMedium" style={{ color: theme.colors.onSurfaceVariant, textAlign: 'center', marginTop: spacing.md }}>
+              Интерпретация ориентировочная. Обсудите результат со специалистом при необходимости.
+            </Text>
+          </Card.Content>
+        </Card>
 
-        <View style={styles.buttonContainer}>
-          <Button
-            title="Отправить результаты"
-            onPress={handleSendEmail}
-            style={styles.button}
-          />
-          <Button
-            title="Вернуться к тестам"
-            onPress={() => navigation.navigate('TestMenu')}
-            style={[styles.button, styles.secondaryButton]}
-          />
-        </View>
-      </View>
+        <Button mode="contained" icon="email-send-outline" onPress={handleSendEmail} style={styles.btn}>
+          Отправить результаты
+        </Button>
+        <Button mode="outlined" icon="clipboard-text-outline" onPress={handleCopyToClipboard} style={styles.btn}>
+          Скопировать текст
+        </Button>
+        <Button mode="text" onPress={() => navigation.navigate('TestMenu')}>
+          Вернуться к тестам
+        </Button>
+      </ScrollView>
     </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: colors.background,
-  },
-  header: {
-    flexDirection: 'row',
+  safe: { flex: 1 },
+  scroll: { padding: spacing.md, paddingBottom: spacing.xxl, gap: spacing.md },
+  hero: {
+    borderRadius: radii.xl,
+    padding: spacing.xl,
     alignItems: 'center',
-    padding: spacing.md,
+    marginBottom: spacing.sm,
   },
-  backButton: {
-    fontSize: 24,
-    color: colors.text,
-    marginRight: spacing.md,
-  },
-  title: {
-    ...typography.h1,
-    color: colors.text,
-  },
-  content: {
-    flex: 1,
-    padding: spacing.lg,
-    alignItems: 'center',
-  },
-  scoreContainer: {
-    alignItems: 'center',
-    marginBottom: spacing.xl,
-  },
-  scoreText: {
-    ...typography.h1,
-    fontSize: 48,
-    color: colors.primary,
-  },
-  scoreLabel: {
-    ...typography.body,
-    color: colors.textLight,
-  },
-  interpretation: {
-    ...typography.h2,
-    color: colors.text,
-    textAlign: 'center',
-    marginBottom: spacing.xl,
-  },
-  buttonContainer: {
-    width: '100%',
-    gap: spacing.md,
-  },
-  button: {
-    width: '100%',
-  },
-  secondaryButton: {
-    backgroundColor: colors.secondary,
-  },
-}); 
+  bigScore: { color: '#fff', fontWeight: '800' },
+  sub: { color: 'rgba(255,255,255,0.9)' },
+  card: { borderRadius: radii.lg },
+  btn: { borderRadius: radii.md },
+});

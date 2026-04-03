@@ -1,9 +1,12 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, SafeAreaView, ScrollView, TouchableOpacity } from 'react-native';
+import { View, StyleSheet, ScrollView } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../../navigation/types';
-import { colors, typography, spacing } from '../../theme';
+import { spacing, radii, shadows } from '../../theme';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import { Text, Button, Card, ProgressBar, useTheme } from 'react-native-paper';
+import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 
 type NavigationProp = NativeStackNavigationProp<RootStackParamList>;
 
@@ -27,6 +30,7 @@ const gdsQuestions = [
 
 export default function GDSScreeningScreen() {
   const navigation = useNavigation<NavigationProp>();
+  const theme = useTheme();
   const [currentQuestion, setCurrentQuestion] = useState(0);
   const [answers, setAnswers] = useState<number[]>([]);
 
@@ -38,51 +42,54 @@ export default function GDSScreeningScreen() {
       setCurrentQuestion(currentQuestion + 1);
     } else {
       const score = calculateScore(newAnswers);
-      const hasDepression = score >= 5; // Порог для определения депрессии
+      const hasDepression = score >= 5;
       navigation.navigate('GDSScreeningResult', { score, hasDepression });
     }
   };
 
-  const calculateScore = (answers: number[]): number => {
-    // Для вопросов 1, 5, 7, 11, 13 ответ "Нет" = 1 балл
-    // Для остальных вопросов ответ "Да" = 1 балл
+  const calculateScore = (ans: number[]): number => {
     const positiveQuestions = [0, 4, 6, 10, 12];
-    return answers.reduce((score, answer, index) => {
+    return ans.reduce((s, answer, index) => {
       if (positiveQuestions.includes(index)) {
-        return score + (answer === 0 ? 1 : 0);
+        return s + (answer === 0 ? 1 : 0);
       }
-      return score + (answer === 1 ? 1 : 0);
+      return s + (answer === 1 ? 1 : 0);
     }, 0);
   };
 
+  const progress = (currentQuestion + 1) / gdsQuestions.length;
+
   return (
-    <SafeAreaView style={styles.container}>
-      <View style={styles.header}>
-        <Text style={styles.title}>GDS-15 Скрининг</Text>
-        <Text style={styles.progress}>
-          Вопрос {currentQuestion + 1} из {gdsQuestions.length}
-        </Text>
+    <SafeAreaView style={[styles.safe, { backgroundColor: theme.colors.background }]} edges={['top', 'bottom']}>
+      <View style={[styles.top, { borderBottomColor: theme.colors.outlineVariant }]}>
+        <View style={styles.topRow}>
+          <MaterialCommunityIcons name="clipboard-pulse" size={28} color={theme.colors.primary} />
+          <View style={{ flex: 1 }}>
+            <Text variant="titleLarge">GDS-15 скрининг</Text>
+            <Text variant="bodySmall" style={{ color: theme.colors.onSurfaceVariant }}>
+              Вопрос {currentQuestion + 1} из {gdsQuestions.length}
+            </Text>
+          </View>
+        </View>
+        <ProgressBar progress={progress} style={styles.bar} color={theme.colors.primary} />
       </View>
 
-      <ScrollView style={styles.scrollView}>
-        <View style={styles.questionContainer}>
-          <Text style={styles.question}>{gdsQuestions[currentQuestion]}</Text>
-          
-          <View style={styles.answersContainer}>
-            <TouchableOpacity
-              style={styles.answerButton}
-              onPress={() => handleAnswer(1)}
-            >
-              <Text style={styles.answerText}>Да</Text>
-            </TouchableOpacity>
-            
-            <TouchableOpacity
-              style={styles.answerButton}
-              onPress={() => handleAnswer(0)}
-            >
-              <Text style={styles.answerText}>Нет</Text>
-            </TouchableOpacity>
-          </View>
+      <ScrollView contentContainerStyle={styles.scroll}>
+        <Card style={[styles.card, shadows.soft]} mode="elevated">
+          <Card.Content>
+            <Text variant="titleMedium" style={{ lineHeight: 26 }}>
+              {gdsQuestions[currentQuestion]}
+            </Text>
+          </Card.Content>
+        </Card>
+
+        <View style={styles.row}>
+          <Button mode="contained" icon="thumb-up-outline" onPress={() => handleAnswer(1)} style={styles.half}>
+            Да
+          </Button>
+          <Button mode="contained-tonal" icon="thumb-down-outline" onPress={() => handleAnswer(0)} style={styles.half}>
+            Нет
+          </Button>
         </View>
       </ScrollView>
     </SafeAreaView>
@@ -90,46 +97,12 @@ export default function GDSScreeningScreen() {
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: colors.background,
-  },
-  header: {
-    padding: spacing.lg,
-    borderBottomWidth: 1,
-    borderBottomColor: colors.border,
-  },
-  title: {
-    ...typography.h1,
-    color: colors.text,
-    marginBottom: spacing.xs,
-  },
-  progress: {
-    ...typography.body,
-    color: colors.textLight,
-  },
-  scrollView: {
-    flex: 1,
-  },
-  questionContainer: {
-    padding: spacing.lg,
-  },
-  question: {
-    ...typography.h2,
-    color: colors.text,
-    marginBottom: spacing.xl,
-  },
-  answersContainer: {
-    gap: spacing.md,
-  },
-  answerButton: {
-    backgroundColor: colors.primary,
-    padding: spacing.lg,
-    borderRadius: 12,
-    alignItems: 'center',
-  },
-  answerText: {
-    ...typography.button,
-    color: colors.background,
-  },
-}); 
+  safe: { flex: 1 },
+  top: { padding: spacing.md, borderBottomWidth: StyleSheet.hairlineWidth },
+  topRow: { flexDirection: 'row', alignItems: 'center', gap: spacing.md, marginBottom: spacing.md },
+  bar: { height: 8, borderRadius: radii.sm },
+  scroll: { padding: spacing.md, gap: spacing.lg, paddingBottom: spacing.xxl },
+  card: { borderRadius: radii.lg },
+  row: { flexDirection: 'row', gap: spacing.md },
+  half: { flex: 1, borderRadius: radii.md },
+});

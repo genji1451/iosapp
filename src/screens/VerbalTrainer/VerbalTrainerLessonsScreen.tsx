@@ -1,36 +1,49 @@
-import React, { useState, useEffect, useCallback } from 'react';
-import { View, Text, StyleSheet, SafeAreaView, ScrollView, TouchableOpacity, ActivityIndicator } from 'react-native';
+import React, { useState, useCallback } from 'react';
+import { View, StyleSheet, ScrollView, Alert, TouchableOpacity } from 'react-native';
 import { useNavigation, useFocusEffect } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../../navigation/types';
-import { colors, typography, spacing } from '../../theme';
+import { spacing, radii, shadows } from '../../theme';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import {
+  Text,
+  Card,
+  ProgressBar,
+  ActivityIndicator,
+  useTheme,
+  FAB,
+  Portal,
+  Dialog,
+  Button,
+} from 'react-native-paper';
+import { BackHeader } from '../../components/ui/BackHeader';
+import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 
 type NavigationProp = NativeStackNavigationProp<RootStackParamList>;
 
-const lessons = [
-  { id: 1, title: 'Урок 1: Тема 1' },
-  { id: 2, title: 'Урок 2: Тема 2' },
-  { id: 3, title: 'Урок 3: Тема 3' },
-  { id: 4, title: 'Урок 4: Тема 4' },
-  { id: 5, title: 'Урок 5: Тема 5' },
-  { id: 6, title: 'Урок 6: Тема 6' },
-];
+const lessons = Array.from({ length: 10 }, (_, i) => ({ id: i + 1, title: `Урок ${i + 1}` }));
 
-// Общее количество заданий в уроке (должно соответствовать данным в VerbalTrainerLessonScreen)
-const TOTAL_TASKS = 15;
+const TOTAL_TASKS = 20;
 
 export default function VerbalTrainerLessonsScreen() {
   const navigation = useNavigation<NavigationProp>();
-  const [lessonProgress, setLessonProgress] = useState<Record<number, { currentTaskIndex: number, score: number, completed: boolean }>>({});
+  const theme = useTheme();
+  const [lessonProgress, setLessonProgress] = useState<
+    Record<number, { currentTaskIndex: number; score: number; completed: boolean }>
+  >({});
   const [isLoadingProgress, setIsLoadingProgress] = useState(true);
+  const [replayDialog, setReplayDialog] = useState<{
+    visible: boolean;
+    lessonId: number;
+    score: number;
+  }>({ visible: false, lessonId: 0, score: 0 });
 
-  // Загрузка прогресса при фокусировке на экране
   useFocusEffect(
     useCallback(() => {
       const loadProgress = async () => {
         setIsLoadingProgress(true);
-        const progressData: Record<number, { currentTaskIndex: number, score: number, completed: boolean }> = {};
+        const progressData: Record<number, { currentTaskIndex: number; score: number; completed: boolean }> = {};
         for (const lesson of lessons) {
           const progressKey = `@verbalTrainerProgress_${lesson.id}`;
           try {
@@ -38,12 +51,10 @@ export default function VerbalTrainerLessonsScreen() {
             if (savedProgress !== null) {
               progressData[lesson.id] = JSON.parse(savedProgress);
             } else {
-              // Если прогресса нет, инициализируем как не завершенный с 0 заданиями и счетом
               progressData[lesson.id] = { currentTaskIndex: 0, score: 0, completed: false };
             }
           } catch (error) {
             console.error(`Failed to load progress for lesson ${lesson.id}`, error);
-            // В случае ошибки тоже инициализируем как не завершенный с 0 заданиями и счетом
             progressData[lesson.id] = { currentTaskIndex: 0, score: 0, completed: false };
           }
         }
@@ -52,118 +63,147 @@ export default function VerbalTrainerLessonsScreen() {
       };
 
       loadProgress();
-
     }, [])
   );
 
   if (isLoadingProgress) {
     return (
-      <View style={styles.loadingContainer}>
-         <ActivityIndicator size="large" color={colors.primary} />
-         <Text style={styles.loadingText}>Загрузка прогресса...</Text>
+      <View style={[styles.loadingContainer, { backgroundColor: theme.colors.background }]}>
+        <ActivityIndicator size="large" color={theme.colors.primary} />
+        <Text variant="bodyLarge" style={{ marginTop: spacing.md }}>
+          Загрузка прогресса...
+        </Text>
       </View>
     );
   }
 
   return (
-    <SafeAreaView style={styles.container}>
-      <View style={styles.header}>
-        <TouchableOpacity onPress={() => navigation.goBack()}>
-          <Text style={styles.backButton}>←</Text>
-        </TouchableOpacity>
-        <Text style={styles.title}>Уроки вербального тренажера</Text>
-      </View>
+    <SafeAreaView style={[styles.safe, { backgroundColor: theme.colors.background }]} edges={['top', 'bottom']}>
+      <BackHeader title="Уроки" subtitle="Вербальный тренажёр" onBack={() => navigation.goBack()} />
 
-      <ScrollView style={styles.scrollView}>
-        <View style={styles.lessonsList}>
-          {lessons.map((lesson) => {
-            const progress = lessonProgress[lesson.id] || { currentTaskIndex: 0, score: 0, completed: false };
-            // Показываем 100% если урок завершен или все вопросы отвечены
-            const completionPercentage = (progress.completed || progress.currentTaskIndex >= TOTAL_TASKS - 1) 
-              ? 100 
-              : Math.round((progress.currentTaskIndex / (TOTAL_TASKS - 1)) * 100);
-            
-            return (
-              <TouchableOpacity
-                key={lesson.id}
-                style={styles.lessonButton}
-                onPress={() => navigation.navigate('VerbalTrainerLesson', { lessonId: lesson.id })}
-              >
-                <View style={styles.lessonButtonContent}>
-                   <Text style={styles.lessonButtonText}>{lesson.title}</Text>
-                   <Text style={styles.progressText}>{completionPercentage}% выполнено</Text>
-                </View>
-              </TouchableOpacity>
-            );
-          })}
-        </View>
+      <ScrollView contentContainerStyle={styles.scroll} showsVerticalScrollIndicator={false}>
+        <Text variant="bodyLarge" style={{ color: theme.colors.onSurfaceVariant, marginBottom: spacing.md }}>
+          Выберите урок. Прогресс сохраняется автоматически.
+        </Text>
+
+        {lessons.map((lesson) => {
+          const progress = lessonProgress[lesson.id] || { currentTaskIndex: 0, score: 0, completed: false };
+          // Показываем 100% только когда урок реально завершен (completed=true)
+          const pct = progress.completed ? 1 : progress.currentTaskIndex / (TOTAL_TASKS - 1);
+          const percentLabel = Math.round(pct * 100);
+
+          return (
+            <TouchableOpacity
+              key={lesson.id}
+              activeOpacity={0.85}
+              onPress={() => {
+                const progress =
+                  lessonProgress[lesson.id] ||
+                  ({ currentTaskIndex: 0, score: 0, completed: false } as {
+                    currentTaskIndex: number;
+                    score: number;
+                    completed: boolean;
+                  });
+
+                const isCompleted = progress.completed;
+
+                if (!isCompleted) {
+                  navigation.navigate('VerbalTrainerLesson', { lessonId: lesson.id });
+                  return;
+                }
+
+                const progressKey = `@verbalTrainerProgress_${lesson.id}`;
+
+                setReplayDialog({ visible: true, lessonId: lesson.id, score: progress.score });
+              }}
+            >
+              <Card style={[styles.card, shadows.soft]} mode="elevated">
+              <Card.Title
+                title={lesson.title}
+                subtitle={`${percentLabel}% пройдено`}
+                left={() => (
+                  <View style={[styles.lessonIcon, { backgroundColor: theme.colors.primaryContainer }]}>
+                    <MaterialCommunityIcons name="headphones" size={22} color={theme.colors.primary} />
+                  </View>
+                )}
+                right={() => <MaterialCommunityIcons name="chevron-right" size={22} color={theme.colors.onSurfaceVariant} />}
+              />
+              <Card.Content style={{ paddingTop: 0 }}>
+                <ProgressBar progress={pct} color={theme.colors.primary} style={styles.bar} />
+              </Card.Content>
+              </Card>
+            </TouchableOpacity>
+          );
+        })}
       </ScrollView>
+
+      <Portal>
+        <Dialog
+          visible={replayDialog.visible}
+          onDismiss={() => setReplayDialog((d) => ({ ...d, visible: false }))}
+          style={{ borderRadius: radii.md }}
+        >
+          <Dialog.Title>Урок уже пройден</Dialog.Title>
+          <Dialog.Content>
+            <Text>Пройти ещё раз?</Text>
+          </Dialog.Content>
+          <Dialog.Actions>
+            <Button
+              onPress={() => {
+                setReplayDialog((d) => ({ ...d, visible: false }));
+                navigation.navigate('VerbalTrainerLessonResult', {
+                  score: replayDialog.score,
+                  lessonId: replayDialog.lessonId,
+                });
+              }}
+            >
+              Посмотреть результат
+            </Button>
+            <Button
+              onPress={async () => {
+                const progressKey = `@verbalTrainerProgress_${replayDialog.lessonId}`;
+                setReplayDialog((d) => ({ ...d, visible: false }));
+                await AsyncStorage.removeItem(progressKey);
+                navigation.navigate('VerbalTrainerLesson', { lessonId: replayDialog.lessonId });
+              }}
+              mode="contained"
+              buttonColor={theme.colors.error}
+              textColor="#fff"
+            >
+              Пройти ещё раз
+            </Button>
+          </Dialog.Actions>
+        </Dialog>
+      </Portal>
+
+      <FAB
+        icon="information"
+        style={[styles.fab, { backgroundColor: theme.colors.secondary }]}
+        onPress={() =>
+          Alert.alert(
+            'Как проходить урок',
+            'Нажмите «Воспроизвести», внимательно прослушайте слово и выберите один из четырёх вариантов.'
+          )
+        }
+        label="Подсказка"
+      />
     </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: colors.background,
-  },
-  header: {
-    flexDirection: 'row',
+  safe: { flex: 1 },
+  scroll: { padding: spacing.md, paddingBottom: 100, gap: spacing.md },
+  loadingContainer: { flex: 1, justifyContent: 'center', alignItems: 'center' },
+  card: { borderRadius: radii.lg },
+  lessonIcon: {
+    width: 40,
+    height: 40,
+    borderRadius: radii.sm,
     alignItems: 'center',
-    padding: spacing.lg,
-    borderBottomWidth: 1,
-    borderBottomColor: colors.border,
+    justifyContent: 'center',
+    marginRight: spacing.sm,
   },
-  backButton: {
-    fontSize: 24,
-    color: colors.text,
-    marginRight: spacing.md,
-  },
-  title: {
-    ...typography.h1,
-    color: colors.text,
-  },
-  scrollView: {
-    flex: 1,
-    padding: spacing.md,
-  },
-  lessonsList: {
-    gap: spacing.md,
-  },
-  lessonButton: {
-    backgroundColor: colors.background,
-    padding: spacing.md,
-    borderRadius: 12,
-    borderWidth: 1,
-    borderColor: colors.border,
-    justifyContent: 'space-between',
-  },
-  lessonButtonContent: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    flex: 1, // Добавим flex, чтобы текст не обрезался
-    marginRight: spacing.md, // Добавим отступ справа
-  },
-  lessonButtonText: {
-    ...typography.button,
-    color: colors.text,
-    flexShrink: 1, // Позволим тексту сжиматься
-    marginRight: spacing.sm, // Отступ между названием и прогрессом
-  },
-  progressText: {
-     ...typography.body,
-     color: colors.textLight,
-  },
-  loadingContainer: {
-     flex: 1,
-     justifyContent: 'center',
-     alignItems: 'center',
-     backgroundColor: colors.background,
-  },
-  loadingText: {
-     marginTop: spacing.md,
-     ...typography.body,
-     color: colors.text,
-  },
-}); 
+  bar: { height: 6, borderRadius: 3 },
+  fab: { position: 'absolute', right: spacing.md, bottom: spacing.lg },
+});

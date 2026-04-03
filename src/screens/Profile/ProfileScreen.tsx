@@ -1,171 +1,105 @@
 import React from 'react';
-import { View, Text, StyleSheet, SafeAreaView, ScrollView } from 'react-native';
-import { colors, typography, spacing } from '../../theme';
+import { View, StyleSheet, ScrollView } from 'react-native';
+import { spacing, radii, shadows } from '../../theme';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import { Text, Card, Avatar, Chip, useTheme, Divider } from 'react-native-paper';
+import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 
-const stats = {
-  totalLessons: 42,
-  completedLessons: 15,
-  totalTime: '12ч 30м',
-  accuracy: '87%',
-  streak: 5,
-  level: 'Начинающий',
-};
+const stats = [
+  { icon: 'book-check' as const, label: 'Уроков', value: '15/42' },
+  { icon: 'clock-outline' as const, label: 'Время', value: '12ч 30м' },
+  { icon: 'target' as const, label: 'Точность', value: '87%' },
+  { icon: 'fire' as const, label: 'Серия', value: '5 дн.' },
+];
+
+const achievements = [
+  { icon: 'star-circle' as const, title: 'Первые шаги', desc: 'Завершён первый модуль' },
+  { icon: 'school' as const, title: 'Отличник', desc: '10 уроков подряд' },
+  { icon: 'flash' as const, title: 'Быстрый старт', desc: 'Серия из 5 дней' },
+];
 
 export default function ProfileScreen() {
+  const theme = useTheme();
+
   return (
-    <SafeAreaView style={styles.container}>
-      <ScrollView style={styles.scrollView}>
-        <View style={styles.header}>
-          <Text style={styles.title}>Профиль</Text>
-          <View style={styles.avatarContainer}>
-            <Text style={styles.avatarEmoji}>👤</Text>
-          </View>
-          <Text style={styles.username}>Пользователь</Text>
-          <Text style={styles.level}>{stats.level}</Text>
+    <SafeAreaView style={[styles.safe, { backgroundColor: theme.colors.background }]} edges={['top']}>
+      <ScrollView contentContainerStyle={styles.scroll} showsVerticalScrollIndicator={false}>
+        <Card style={[styles.hero, shadows.card]} mode="elevated">
+          <Card.Content style={styles.heroContent}>
+            <Avatar.Text size={72} label="ЯС" style={{ backgroundColor: theme.colors.primaryContainer }} color={theme.colors.primary} />
+            <Text variant="headlineSmall" style={{ marginTop: spacing.md, color: theme.colors.onSurface }}>
+              Пользователь
+            </Text>
+            <Chip icon="shield-star" style={styles.levelChip} textStyle={{ fontWeight: '600' }}>
+              Уровень: Начинающий
+            </Chip>
+          </Card.Content>
+        </Card>
+
+        <Text variant="titleMedium" style={[styles.sectionTitle, { color: theme.colors.onBackground }]}>
+          Статистика
+        </Text>
+        <View style={styles.grid}>
+          {stats.map((s) => (
+            <Card key={s.label} style={[styles.statCard, shadows.soft]} mode="elevated">
+              <Card.Content style={styles.statInner}>
+                <MaterialCommunityIcons name={s.icon} size={22} color={theme.colors.primary} />
+                <Text variant="titleLarge" style={{ marginTop: spacing.xs }}>
+                  {s.value}
+                </Text>
+                <Text variant="bodySmall" style={{ color: theme.colors.onSurfaceVariant }}>
+                  {s.label}
+                </Text>
+              </Card.Content>
+            </Card>
+          ))}
         </View>
 
-        <View style={styles.statsContainer}>
-          <View style={styles.statCard}>
-            <Text style={styles.statEmoji}>📚</Text>
-            <Text style={styles.statValue}>{stats.completedLessons}/{stats.totalLessons}</Text>
-            <Text style={styles.statLabel}>Уроков пройдено</Text>
-          </View>
-
-          <View style={styles.statCard}>
-            <Text style={styles.statEmoji}>⏱</Text>
-            <Text style={styles.statValue}>{stats.totalTime}</Text>
-            <Text style={styles.statLabel}>Время занятий</Text>
-          </View>
-
-          <View style={styles.statCard}>
-            <Text style={styles.statEmoji}>🎯</Text>
-            <Text style={styles.statValue}>{stats.accuracy}</Text>
-            <Text style={styles.statLabel}>Точность</Text>
-          </View>
-
-          <View style={styles.statCard}>
-            <Text style={styles.statEmoji}>🔥</Text>
-            <Text style={styles.statValue}>{stats.streak} дней</Text>
-            <Text style={styles.statLabel}>Серия</Text>
-          </View>
-        </View>
-
-        <View style={styles.achievementsContainer}>
-          <Text style={styles.sectionTitle}>Достижения</Text>
-          <View style={styles.achievementsList}>
-            <View style={styles.achievementItem}>
-              <Text style={styles.achievementEmoji}>🌟</Text>
-              <Text style={styles.achievementTitle}>Первые шаги</Text>
-            </View>
-            <View style={styles.achievementItem}>
-              <Text style={styles.achievementEmoji}>🎓</Text>
-              <Text style={styles.achievementTitle}>Отличник</Text>
-            </View>
-            <View style={styles.achievementItem}>
-              <Text style={styles.achievementEmoji}>⚡️</Text>
-              <Text style={styles.achievementTitle}>Быстрый старт</Text>
-            </View>
-          </View>
-        </View>
+        <Text variant="titleMedium" style={[styles.sectionTitle, { color: theme.colors.onBackground }]}>
+          Достижения
+        </Text>
+        {achievements.map((a, i) => (
+          <Card key={a.title} style={[styles.achCard, shadows.soft]} mode="elevated">
+            <Card.Content style={styles.achRow}>
+              <View style={[styles.achIcon, { backgroundColor: theme.colors.secondaryContainer }]}>
+                <MaterialCommunityIcons name={a.icon} size={24} color={theme.colors.secondary} />
+              </View>
+              <View style={{ flex: 1 }}>
+                <Text variant="titleSmall">{a.title}</Text>
+                <Text variant="bodySmall" style={{ color: theme.colors.onSurfaceVariant }}>
+                  {a.desc}
+                </Text>
+              </View>
+            </Card.Content>
+            {i < achievements.length - 1 ? null : null}
+          </Card>
+        ))}
+        <Divider style={{ marginVertical: spacing.lg }} />
+        <Text variant="bodySmall" style={{ color: theme.colors.onSurfaceVariant, textAlign: 'center' }}>
+          Данные обновляются после каждой тренировки.
+        </Text>
       </ScrollView>
     </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: colors.background,
-  },
-  scrollView: {
-    flex: 1,
-  },
-  header: {
-    alignItems: 'center',
-    padding: spacing.lg,
-  },
-  title: {
-    ...typography.h1,
-    color: colors.text,
-    marginBottom: spacing.lg,
-  },
-  avatarContainer: {
-    width: 100,
-    height: 100,
-    borderRadius: 50,
-    backgroundColor: colors.primary,
+  safe: { flex: 1 },
+  scroll: { padding: spacing.md, paddingBottom: spacing.xxl },
+  hero: { borderRadius: radii.xl, marginBottom: spacing.lg },
+  heroContent: { alignItems: 'center' },
+  levelChip: { marginTop: spacing.sm },
+  sectionTitle: { marginBottom: spacing.md, marginTop: spacing.sm },
+  grid: { flexDirection: 'row', flexWrap: 'wrap', gap: spacing.md, marginBottom: spacing.lg },
+  statCard: { width: '47%', borderRadius: radii.lg },
+  statInner: { alignItems: 'center', minHeight: 100, justifyContent: 'center' },
+  achCard: { borderRadius: radii.lg, marginBottom: spacing.md },
+  achRow: { flexDirection: 'row', alignItems: 'center', gap: spacing.md },
+  achIcon: {
+    width: 48,
+    height: 48,
+    borderRadius: radii.md,
     alignItems: 'center',
     justifyContent: 'center',
-    marginBottom: spacing.md,
   },
-  avatarEmoji: {
-    fontSize: 48,
-  },
-  username: {
-    ...typography.h2,
-    color: colors.text,
-    marginBottom: spacing.xs,
-  },
-  level: {
-    ...typography.body,
-    color: colors.textLight,
-  },
-  statsContainer: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    padding: spacing.md,
-    justifyContent: 'space-between',
-  },
-  statCard: {
-    width: '48%',
-    backgroundColor: colors.background,
-    borderRadius: 12,
-    padding: spacing.md,
-    marginBottom: spacing.md,
-    alignItems: 'center',
-    borderWidth: 1,
-    borderColor: colors.border,
-  },
-  statEmoji: {
-    fontSize: 24,
-    marginBottom: spacing.xs,
-  },
-  statValue: {
-    ...typography.h2,
-    color: colors.text,
-    marginBottom: spacing.xs,
-  },
-  statLabel: {
-    ...typography.body,
-    color: colors.textLight,
-    textAlign: 'center',
-  },
-  achievementsContainer: {
-    padding: spacing.lg,
-  },
-  sectionTitle: {
-    ...typography.h2,
-    color: colors.text,
-    marginBottom: spacing.md,
-  },
-  achievementsList: {
-    gap: spacing.md,
-  },
-  achievementItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: colors.background,
-    borderRadius: 12,
-    padding: spacing.md,
-    borderWidth: 1,
-    borderColor: colors.border,
-  },
-  achievementEmoji: {
-    fontSize: 24,
-    marginRight: spacing.md,
-  },
-  achievementTitle: {
-    ...typography.body,
-    color: colors.text,
-  },
-}); 
+});

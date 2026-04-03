@@ -1,90 +1,84 @@
-import React, { useEffect } from 'react';
-import { View, Text, StyleSheet } from 'react-native';
+import React, { useEffect, useRef } from 'react';
+import { View, StyleSheet, Animated } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../../navigation/types';
-import { colors, typography } from '../../theme';
+import { colors, spacing } from '../../theme';
+import { LinearGradient } from 'expo-linear-gradient';
+import { Text, ActivityIndicator } from 'react-native-paper';
+import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 
 type NavigationProp = NativeStackNavigationProp<RootStackParamList>;
 
 export default function SplashScreen() {
   const navigation = useNavigation<NavigationProp>();
+  const scale = useRef(new Animated.Value(0.92)).current;
+  const opacity = useRef(new Animated.Value(0)).current;
+
+  useEffect(() => {
+    Animated.parallel([
+      Animated.spring(scale, { toValue: 1, friction: 6, useNativeDriver: true }),
+      Animated.timing(opacity, { toValue: 1, duration: 500, useNativeDriver: true }),
+    ]).start();
+  }, [scale, opacity]);
 
   useEffect(() => {
     const timer = setTimeout(() => {
       navigation.replace('Auth');
-    }, 2000);
-
+    }, 2200);
     return () => clearTimeout(timer);
   }, [navigation]);
 
   return (
-    <View style={styles.container}>
-      <View style={styles.emojiContainer}>
-        <Text style={styles.emoji}>🍀</Text>
-      </View>
-      <View style={styles.logoContainer}>
-        <View style={styles.logo}>
-          <Text style={styles.logoText}>Я</Text>
+    <LinearGradient
+      colors={[colors.gradientStart, colors.gradientEnd, '#4F46E5']}
+      style={styles.gradient}
+      start={{ x: 0.1, y: 0 }}
+      end={{ x: 0.9, y: 1 }}
+    >
+      <Animated.View style={[styles.logoWrap, { transform: [{ scale }], opacity }]}>
+        <View style={styles.logoRing}>
+          <MaterialCommunityIcons name="headphones" size={56} color="#fff" />
         </View>
-      </View>
-      <Text style={styles.appName}>Я-СЛЫШУ</Text>
-      <View style={styles.bottomEmojiContainer}>
-        <Text style={styles.bottomEmoji}>🎧 👂 🎵</Text>
-      </View>
-    </View>
+      </Animated.View>
+      <Text variant="headlineLarge" style={styles.title}>
+        Я-СЛЫШУ
+      </Text>
+      <Text variant="bodyLarge" style={styles.subtitle}>
+        Слух · Речь · Уверенность
+      </Text>
+      <ActivityIndicator animating color="#fff" style={styles.loader} />
+    </LinearGradient>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
+  gradient: {
     flex: 1,
-    backgroundColor: colors.splashBackground,
     alignItems: 'center',
     justifyContent: 'center',
+    padding: spacing.xl,
   },
-  emojiContainer: {
-    position: 'absolute',
-    top: '15%',
-    alignItems: 'center',
-  },
-  emoji: {
-    fontSize: 48,
-  },
-  logoContainer: {
+  logoWrap: { marginBottom: spacing.lg },
+  logoRing: {
     width: 120,
     height: 120,
-    backgroundColor: colors.background,
     borderRadius: 60,
+    backgroundColor: 'rgba(255,255,255,0.15)',
     alignItems: 'center',
     justifyContent: 'center',
-    marginBottom: 20,
+    borderWidth: 2,
+    borderColor: 'rgba(255,255,255,0.35)',
   },
-  logo: {
-    width: 80,
-    height: 80,
-    backgroundColor: colors.primary,
-    borderRadius: 40,
-    alignItems: 'center',
-    justifyContent: 'center',
+  title: {
+    color: '#fff',
+    fontWeight: '800',
+    letterSpacing: 1,
+    marginBottom: spacing.sm,
   },
-  logoText: {
-    ...typography.h1,
-    color: colors.background,
-    fontSize: 40,
+  subtitle: {
+    color: 'rgba(255,255,255,0.9)',
+    marginBottom: spacing.xl,
   },
-  appName: {
-    ...typography.h1,
-    color: colors.background,
-    fontSize: 32,
-  },
-  bottomEmojiContainer: {
-    position: 'absolute',
-    bottom: '15%',
-    alignItems: 'center',
-  },
-  bottomEmoji: {
-    fontSize: 32,
-    letterSpacing: 8,
-  },
-}); 
+  loader: { marginTop: spacing.md },
+});

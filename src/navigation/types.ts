@@ -13,9 +13,14 @@ export type RootStackParamList = {
   MainTabs: NavigatorScreenParams<MainTabParamList>;
   VerbalTrainerMenu: undefined;
   IntonationTrainerMenu: undefined;
+  IntonationTrainerLessons: undefined;
+  IntonationLesson: { lessonId: number };
+  IntonationLessonResult: { score: number; lessonId: number };
   VerbalTrainerLessons: undefined;
   VerbalTrainerLesson: { lessonId: number };
   VerbalTrainerLessonResult: { score: number; lessonId: number };
+  VerbalTrainerControl: undefined;
+  VerbalTrainerControlResult: { score: number; total: number };
 };
 
 export type MainTabParamList = {

@@ -1,53 +1,88 @@
 import React from 'react';
-import { View, Text, StyleSheet, SafeAreaView, ScrollView, TouchableOpacity } from 'react-native';
+import { View, StyleSheet, ScrollView } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../../navigation/types';
-import { colors, typography, spacing } from '../../theme';
+import { spacing, radii, shadows } from '../../theme';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import { Card, Text, Button, ProgressBar, useTheme } from 'react-native-paper';
+import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 
 type NavigationProp = NativeStackNavigationProp<RootStackParamList>;
 
 const lessons = [
-  { id: 1, title: 'Вербальный тренажёр', progress: 0, isVerbal: true },
-  { id: 2, title: 'Интонационный тренажёр', progress: 0, isIntonation: true },
+  {
+    id: 1,
+    title: 'Вербальный тренажёр',
+    desc: 'Распознавание слов на слух',
+    progress: 0.35,
+    icon: 'ear-hearing' as const,
+    isVerbal: true,
+  },
+  {
+    id: 2,
+    title: 'Интонационный тренажёр',
+    desc: 'Мелодика и ударение',
+    progress: 0,
+    icon: 'waveform' as const,
+    isIntonation: true,
+  },
 ];
 
 export default function LessonSelectScreen() {
   const navigation = useNavigation<NavigationProp>();
+  const theme = useTheme();
+
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView style={[styles.safe, { backgroundColor: theme.colors.background }]} edges={['top']}>
       <View style={styles.header}>
-        <Text style={styles.title}>Тесты</Text>
+        <Text variant="headlineSmall" style={{ color: theme.colors.onBackground }}>
+          Тренажёры
+        </Text>
+        <Text variant="bodyMedium" style={{ color: theme.colors.onSurfaceVariant }}>
+          Выберите модуль и продолжите с места остановки
+        </Text>
       </View>
 
-      <ScrollView style={styles.scrollView}>
+      <ScrollView contentContainerStyle={styles.scroll} showsVerticalScrollIndicator={false}>
         {lessons.map((lesson) => (
-          <TouchableOpacity
-            key={lesson.id}
-            style={styles.lessonCard}
-            onPress={() => {
-              if (lesson.isVerbal) {
-                navigation.navigate('VerbalTrainerMenu');
-              } else if (lesson.isIntonation) {
-                navigation.navigate('IntonationTrainerMenu');
-              }
-            }}
-          >
-            <View style={styles.lessonInfo}>
-              <Text style={styles.lessonTitle}>{lesson.title}</Text>
-              <Text style={styles.lessonDescription}>
-                {lesson.isVerbal 
-                  ? 'Модуль тренировки речи' 
-                  : lesson.isIntonation 
-                    ? 'Модуль тренировки интонации'
-                    : 'Тренировка слуха'
-                }
-              </Text>
-            </View>
-            <View style={styles.progressCircle}>
-              <Text style={styles.progressText}>{lesson.progress}%</Text>
-            </View>
-          </TouchableOpacity>
+          <Card key={lesson.id} style={[styles.card, shadows.soft]} mode="elevated">
+            <Card.Content>
+              <View style={styles.rowTop}>
+                <View style={[styles.iconBox, { backgroundColor: theme.colors.primaryContainer }]}>
+                  <MaterialCommunityIcons name={lesson.icon} size={28} color={theme.colors.primary} />
+                </View>
+                <View style={styles.meta}>
+                  <Text variant="titleMedium">{lesson.title}</Text>
+                  <Text variant="bodyMedium" style={{ color: theme.colors.onSurfaceVariant }}>
+                    {lesson.desc}
+                  </Text>
+                </View>
+              </View>
+              <View style={styles.progressBlock}>
+                <View style={styles.progressLabels}>
+                  <Text variant="labelMedium" style={{ color: theme.colors.onSurfaceVariant }}>
+                    Прогресс
+                  </Text>
+                  <Text variant="labelMedium" style={{ color: theme.colors.primary }}>
+                    {Math.round(lesson.progress * 100)}%
+                  </Text>
+                </View>
+                <ProgressBar progress={lesson.progress} color={theme.colors.primary} style={styles.bar} />
+              </View>
+              <Button
+                mode="contained-tonal"
+                icon="arrow-right"
+                onPress={() => {
+                  if (lesson.isVerbal) navigation.navigate('VerbalTrainerMenu');
+                  else if (lesson.isIntonation) navigation.navigate('IntonationTrainerMenu');
+                }}
+                style={styles.action}
+              >
+                Открыть
+              </Button>
+            </Card.Content>
+          </Card>
         ))}
       </ScrollView>
     </SafeAreaView>
@@ -55,57 +90,21 @@ export default function LessonSelectScreen() {
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: colors.background,
-  },
-  header: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    padding: spacing.lg,
-  },
-  title: {
-    ...typography.h1,
-    color: colors.text,
-  },
-  scrollView: {
-    flex: 1,
-    padding: spacing.md,
-  },
-  lessonCard: {
-    flexDirection: 'row',
-    backgroundColor: colors.background,
-    borderRadius: 12,
-    padding: spacing.lg,
-    marginBottom: spacing.md,
-    borderWidth: 1,
-    borderColor: colors.border,
-    alignItems: 'center',
-    justifyContent: 'space-between',
-  },
-  lessonInfo: {
-    flex: 1,
-  },
-  lessonTitle: {
-    ...typography.h2,
-    color: colors.text,
-    marginBottom: spacing.xs,
-  },
-  lessonDescription: {
-    ...typography.body,
-    color: colors.textLight,
-  },
-  progressCircle: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    backgroundColor: colors.primary,
+  safe: { flex: 1 },
+  header: { paddingHorizontal: spacing.md, paddingTop: spacing.sm, paddingBottom: spacing.md, gap: spacing.xs },
+  scroll: { padding: spacing.md, paddingBottom: spacing.xxl, gap: spacing.md },
+  card: { borderRadius: radii.lg },
+  rowTop: { flexDirection: 'row', gap: spacing.md, marginBottom: spacing.md },
+  iconBox: {
+    width: 56,
+    height: 56,
+    borderRadius: radii.md,
     alignItems: 'center',
     justifyContent: 'center',
   },
-  progressText: {
-    color: colors.background,
-    fontWeight: '600' as const,
-  },
-}); 
+  meta: { flex: 1 },
+  progressBlock: { marginBottom: spacing.md },
+  progressLabels: { flexDirection: 'row', justifyContent: 'space-between', marginBottom: spacing.xs },
+  bar: { height: 8, borderRadius: 4 },
+  action: { borderRadius: radii.md },
+});

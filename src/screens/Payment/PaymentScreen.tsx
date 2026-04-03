@@ -1,309 +1,127 @@
 import React, { useState } from 'react';
-import {
-  View,
-  Text,
-  StyleSheet,
-  SafeAreaView,
-  TouchableOpacity,
-  Modal,
-  TextInput,
-  Alert,
-} from 'react-native';
+import { View, StyleSheet, ScrollView, Alert, Pressable } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../../navigation/types';
-import { colors, typography, spacing } from '../../theme';
-import { Button } from '../../components/Button';
+import { spacing, radii, shadows } from '../../theme';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import { Text, Button, Card, TextInput, Portal, Dialog, RadioButton, useTheme, List, Divider } from 'react-native-paper';
+import { BackHeader } from '../../components/ui/BackHeader';
+import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 
 type NavigationProp = NativeStackNavigationProp<RootStackParamList>;
-
 type PaymentMethod = 'promo' | 'card' | null;
 
 export default function PaymentScreen() {
   const navigation = useNavigation<NavigationProp>();
-  const [selectedMethod, setSelectedMethod] = useState<PaymentMethod>(null);
-  const [showPromoModal, setShowPromoModal] = useState(false);
-  const [showCardModal, setShowCardModal] = useState(false);
+  const theme = useTheme();
+  const [method, setMethod] = useState<PaymentMethod>(null);
+  const [promoOpen, setPromoOpen] = useState(false);
+  const [cardOpen, setCardOpen] = useState(false);
   const [promoCode, setPromoCode] = useState('');
   const [cardNumber, setCardNumber] = useState('');
   const [cardExpiry, setCardExpiry] = useState('');
   const [cardCVV, setCardCVV] = useState('');
 
   const handlePayment = () => {
-    if (!selectedMethod) {
-      Alert.alert('Ошибка', 'Пожалуйста, выберите способ оплаты');
+    if (!method) {
+      Alert.alert('Выберите способ', 'Укажите промокод или оплату картой.');
       return;
     }
-
-    if (selectedMethod === 'promo' && !promoCode) {
-      Alert.alert('Ошибка', 'Пожалуйста, введите промокод');
+    if (method === 'promo' && !promoCode) {
+      Alert.alert('Промокод', 'Введите и примените промокод.');
       return;
     }
-
-    if (selectedMethod === 'card' && (!cardNumber || !cardExpiry || !cardCVV)) {
-      Alert.alert('Ошибка', 'Пожалуйста, заполните все поля карты');
+    if (method === 'card' && (!cardNumber || !cardExpiry || !cardCVV)) {
+      Alert.alert('Карта', 'Заполните данные карты в форме.');
       return;
     }
-
-    // Проверка промокода
-    if (selectedMethod === 'promo' && promoCode.toLowerCase() !== 'test') {
+    if (method === 'promo' && promoCode.toLowerCase() !== 'test') {
       Alert.alert('Ошибка', 'Неверный промокод');
       return;
     }
-
-    // В реальном приложении здесь была бы логика оплаты
-    navigation.replace('MainTabs');
-  };
-
-  const handlePromoPress = () => {
-    setSelectedMethod('promo');
-    setShowPromoModal(true);
-  };
-
-  const handleCardPress = () => {
-    setSelectedMethod('card');
-    setShowCardModal(true);
-  };
-
-  const handlePromoSubmit = () => {
-    if (!promoCode) {
-      Alert.alert('Ошибка', 'Пожалуйста, введите промокод');
-      return;
-    }
-    setShowPromoModal(false);
-  };
-
-  const handleCardSubmit = () => {
-    if (!cardNumber || !cardExpiry || !cardCVV) {
-      Alert.alert('Ошибка', 'Пожалуйста, заполните все поля карты');
-      return;
-    }
-    setShowCardModal(false);
+    navigation.replace('MainTabs', { screen: 'ModeSelect' });
   };
 
   return (
-    <SafeAreaView style={styles.container}>
-      <View style={styles.header}>
-        <TouchableOpacity onPress={() => navigation.goBack()}>
-          <Text style={styles.backButton}>←</Text>
-        </TouchableOpacity>
-        <Text style={styles.title}>Оплата</Text>
-      </View>
+    <SafeAreaView style={[styles.safe, { backgroundColor: theme.colors.background }]} edges={['top', 'bottom']}>
+      <BackHeader title="Оплата" subtitle="Активация доступа" onBack={() => navigation.goBack()} />
+      <ScrollView contentContainerStyle={styles.scroll} showsVerticalScrollIndicator={false}>
+        <Text variant="bodyLarge" style={{ color: theme.colors.onSurfaceVariant, marginBottom: spacing.md }}>
+          Выберите удобный способ. Для демо подходит промокод «test».
+        </Text>
 
-      <View style={styles.content}>
-        <TouchableOpacity 
-          style={[styles.paymentOption, selectedMethod === 'promo' && styles.selectedOption]}
-          onPress={handlePromoPress}
-        >
-          <Text style={styles.paymentOptionTitle}>Промокод</Text>
-          <Text style={styles.paymentOptionDescription}>
-            {promoCode ? `Введен код: ${promoCode}` : 'Активировать промокод'}
-          </Text>
-        </TouchableOpacity>
+        <Card style={[styles.card, shadows.soft]} mode="elevated">
+          <Card.Content>
+            <RadioButton.Group onValueChange={(v) => setMethod(v as PaymentMethod)} value={method ?? ''}>
+              <Pressable onPress={() => { setMethod('promo'); setPromoOpen(true); }}>
+                <List.Item
+                  title="Промокод"
+                  description={promoCode ? `Код: ${promoCode}` : 'Активировать предоплаченный доступ'}
+                  left={() => <MaterialCommunityIcons name="ticket-confirmation" size={26} color={theme.colors.primary} />}
+                  right={() => <RadioButton value="promo" />}
+                />
+              </Pressable>
+              <Divider />
+              <Pressable onPress={() => { setMethod('card'); setCardOpen(true); }}>
+                <List.Item
+                  title="Банковская карта"
+                  description={cardNumber ? 'Данные сохранены' : 'Visa, MasterCard, МИР'}
+                  left={() => <MaterialCommunityIcons name="credit-card-outline" size={26} color={theme.colors.secondary} />}
+                  right={() => <RadioButton value="card" />}
+                />
+              </Pressable>
+            </RadioButton.Group>
+          </Card.Content>
+        </Card>
 
-        <TouchableOpacity 
-          style={[styles.paymentOption, selectedMethod === 'card' && styles.selectedOption]}
-          onPress={handleCardPress}
-        >
-          <Text style={styles.paymentOptionTitle}>Банковская карта</Text>
-          <Text style={styles.paymentOptionDescription}>
-            {cardNumber ? 'Карта введена' : 'Visa, MasterCard, МИР'}
-          </Text>
-        </TouchableOpacity>
+        <Button mode="contained" icon="check-decagram" onPress={handlePayment} style={styles.pay}>
+          Оплатить и продолжить
+        </Button>
+      </ScrollView>
 
-        <Button
-          title="Оплатить"
-          onPress={handlePayment}
-          style={styles.continueButton}
-        />
-      </View>
+      <Portal>
+        <Dialog visible={promoOpen} onDismiss={() => setPromoOpen(false)} style={styles.dialog}>
+          <Dialog.Title>Промокод</Dialog.Title>
+          <Dialog.Content>
+            <TextInput mode="outlined" label="Код" value={promoCode} onChangeText={setPromoCode} autoCapitalize="none" />
+          </Dialog.Content>
+          <Dialog.Actions>
+            <Button onPress={() => setPromoOpen(false)}>Отмена</Button>
+            <Button mode="contained" onPress={() => setPromoOpen(false)}>
+              Готово
+            </Button>
+          </Dialog.Actions>
+        </Dialog>
 
-      {/* Модальное окно для промокода */}
-      <Modal
-        visible={showPromoModal}
-        transparent
-        animationType="slide"
-        onRequestClose={() => setShowPromoModal(false)}
-      >
-        <View style={styles.modalOverlay}>
-          <View style={styles.modalContent}>
-            <Text style={styles.modalTitle}>Введите промокод</Text>
-            <Text style={styles.modalDescription}>
-              Введите промокод для активации подписки
-            </Text>
-            <TextInput
-              style={styles.input}
-              placeholder="Промокод"
-              value={promoCode}
-              onChangeText={setPromoCode}
-              autoCapitalize="none"
-            />
-            <View style={styles.modalButtons}>
-              <Button
-                title="Отмена"
-                onPress={() => setShowPromoModal(false)}
-                style={[styles.modalButton, styles.secondaryButton]}
-              />
-              <Button
-                title="Применить"
-                onPress={handlePromoSubmit}
-                style={styles.modalButton}
-              />
+        <Dialog visible={cardOpen} onDismiss={() => setCardOpen(false)} style={styles.dialog}>
+          <Dialog.Title>Данные карты</Dialog.Title>
+          <Dialog.Content>
+            <TextInput mode="outlined" label="Номер" value={cardNumber} onChangeText={setCardNumber} keyboardType="numeric" maxLength={16} style={styles.gap} />
+            <View style={styles.row}>
+              <TextInput mode="outlined" label="MM/YY" value={cardExpiry} onChangeText={setCardExpiry} style={[styles.flex, styles.gap]} maxLength={5} />
+              <TextInput mode="outlined" label="CVV" value={cardCVV} onChangeText={setCardCVV} keyboardType="numeric" secureTextEntry style={[styles.flex, styles.gap]} maxLength={3} />
             </View>
-          </View>
-        </View>
-      </Modal>
-
-      {/* Модальное окно для карты */}
-      <Modal
-        visible={showCardModal}
-        transparent
-        animationType="slide"
-        onRequestClose={() => setShowCardModal(false)}
-      >
-        <View style={styles.modalOverlay}>
-          <View style={styles.modalContent}>
-            <Text style={styles.modalTitle}>Введите данные карты</Text>
-            <TextInput
-              style={styles.input}
-              placeholder="Номер карты"
-              value={cardNumber}
-              onChangeText={setCardNumber}
-              keyboardType="numeric"
-              maxLength={16}
-            />
-            <View style={styles.cardInputRow}>
-              <TextInput
-                style={[styles.input, styles.cardInput]}
-                placeholder="MM/YY"
-                value={cardExpiry}
-                onChangeText={setCardExpiry}
-                maxLength={5}
-              />
-              <TextInput
-                style={[styles.input, styles.cardInput]}
-                placeholder="CVV"
-                value={cardCVV}
-                onChangeText={setCardCVV}
-                keyboardType="numeric"
-                maxLength={3}
-                secureTextEntry
-              />
-            </View>
-            <View style={styles.modalButtons}>
-              <Button
-                title="Отмена"
-                onPress={() => setShowCardModal(false)}
-                style={[styles.modalButton, styles.secondaryButton]}
-              />
-              <Button
-                title="Сохранить"
-                onPress={handleCardSubmit}
-                style={styles.modalButton}
-              />
-            </View>
-          </View>
-        </View>
-      </Modal>
+          </Dialog.Content>
+          <Dialog.Actions>
+            <Button onPress={() => setCardOpen(false)}>Отмена</Button>
+            <Button mode="contained" onPress={() => setCardOpen(false)}>
+              Сохранить
+            </Button>
+          </Dialog.Actions>
+        </Dialog>
+      </Portal>
     </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: colors.background,
-  },
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    padding: spacing.md,
-  },
-  backButton: {
-    fontSize: 24,
-    color: colors.text,
-    marginRight: spacing.md,
-  },
-  title: {
-    ...typography.h1,
-    color: colors.text,
-  },
-  content: {
-    flex: 1,
-    padding: spacing.lg,
-  },
-  paymentOption: {
-    backgroundColor: colors.background,
-    borderRadius: 12,
-    padding: spacing.lg,
-    marginBottom: spacing.md,
-    borderWidth: 1,
-    borderColor: colors.border,
-  },
-  selectedOption: {
-    borderColor: colors.primary,
-    borderWidth: 2,
-  },
-  paymentOptionTitle: {
-    ...typography.h2,
-    color: colors.text,
-    marginBottom: spacing.xs,
-  },
-  paymentOptionDescription: {
-    ...typography.body,
-    color: colors.textLight,
-  },
-  continueButton: {
-    marginTop: spacing.xl,
-  },
-  modalOverlay: {
-    flex: 1,
-    backgroundColor: 'rgba(0, 0, 0, 0.5)',
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  modalContent: {
-    backgroundColor: colors.background,
-    borderRadius: 12,
-    padding: spacing.lg,
-    width: '90%',
-    maxWidth: 400,
-  },
-  modalTitle: {
-    ...typography.h2,
-    color: colors.text,
-    marginBottom: spacing.sm,
-  },
-  modalDescription: {
-    ...typography.body,
-    color: colors.textLight,
-    marginBottom: spacing.lg,
-  },
-  input: {
-    height: 50,
-    borderWidth: 1,
-    borderColor: colors.border,
-    borderRadius: 12,
-    paddingHorizontal: spacing.md,
-    marginBottom: spacing.md,
-    fontSize: 16,
-  },
-  cardInputRow: {
-    flexDirection: 'row',
-    gap: spacing.md,
-  },
-  cardInput: {
-    flex: 1,
-  },
-  modalButtons: {
-    flexDirection: 'row',
-    gap: spacing.md,
-    marginTop: spacing.md,
-  },
-  modalButton: {
-    flex: 1,
-  },
-  secondaryButton: {
-    backgroundColor: colors.secondary,
-  },
-}); 
+  safe: { flex: 1 },
+  scroll: { padding: spacing.md, paddingBottom: spacing.xxl, gap: spacing.md },
+  card: { borderRadius: radii.lg },
+  pay: { marginTop: spacing.md, borderRadius: radii.lg },
+  dialog: { borderRadius: radii.lg },
+  gap: { marginBottom: spacing.sm },
+  row: { flexDirection: 'row', gap: spacing.md },
+  flex: { flex: 1 },
+});

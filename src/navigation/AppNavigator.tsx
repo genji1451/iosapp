@@ -11,7 +11,7 @@ import GDSScreeningResultScreen from '../screens/GDSScreening/GDSScreeningResult
 import TestMenuScreen from '../screens/TestMenu/TestMenuScreen';
 import GDSTestScreen from '../screens/GDSTest/GDSTestScreen';
 import TestResultScreen from '../screens/TestResult/TestResultScreen';
-import VerbalTrainerMenuScreen from '../screens/VerbalTrainerMenu/VerbalTrainerMenuScreen';
+import VerbalTrainerMenuScreen from '../screens/VerbalTrainer/VerbalTrainerMenuScreen';
 import IntonationTrainerMenuScreen from '../screens/IntonationTrainerMenu/IntonationTrainerMenuScreen';
 
 const Stack = createNativeStackNavigator<RootStackParamList>();

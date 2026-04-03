@@ -1,9 +1,13 @@
 import React from 'react';
-import { View, Text, StyleSheet, SafeAreaView, TouchableOpacity } from 'react-native';
+import { View, StyleSheet } from 'react-native';
 import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../../navigation/types';
-import { colors, typography, spacing } from '../../theme';
+import { spacing, radii, shadows, colors as appColors } from '../../theme';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import { Text, Button, Card, useTheme } from 'react-native-paper';
+import { LinearGradient } from 'expo-linear-gradient';
+import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 
 type NavigationProp = NativeStackNavigationProp<RootStackParamList>;
 type RouteProps = RouteProp<RootStackParamList, 'GDSScreeningResult'>;
@@ -11,96 +15,52 @@ type RouteProps = RouteProp<RootStackParamList, 'GDSScreeningResult'>;
 export default function GDSScreeningResultScreen() {
   const navigation = useNavigation<NavigationProp>();
   const route = useRoute<RouteProps>();
+  const theme = useTheme();
   const { score, hasDepression } = route.params;
 
   return (
-    <SafeAreaView style={styles.container}>
-      <View style={styles.content}>
-        <Text style={styles.title}>Результаты скрининга</Text>
-        
-        <View style={styles.scoreContainer}>
-          <Text style={styles.scoreLabel}>Ваш результат:</Text>
-          <Text style={styles.score}>{score} баллов</Text>
-        </View>
+    <SafeAreaView style={[styles.safe, { backgroundColor: theme.colors.background }]} edges={['top', 'bottom']}>
+      <LinearGradient colors={[appColors.gradientStart, appColors.gradientEnd]} style={styles.hero}>
+        <MaterialCommunityIcons name={hasDepression ? 'alert-circle-outline' : 'check-decagram'} size={48} color="#fff" />
+        <Text variant="headlineSmall" style={styles.heroTitle}>
+          Результаты скрининга
+        </Text>
+        <Text variant="displaySmall" style={styles.score}>
+          {score} баллов
+        </Text>
+      </LinearGradient>
 
-        <View style={styles.resultContainer}>
-          <Text style={styles.resultText}>
-            {hasDepression
-              ? 'По результатам скрининга обнаружены признаки депрессии. Рекомендуется обратиться к специалисту для консультации.'
-              : 'По результатам скрининга признаки депрессии не обнаружены. Вы можете продолжить работу с приложением.'}
-          </Text>
-        </View>
+      <View style={styles.body}>
+        <Card style={[styles.card, shadows.soft]} mode="elevated">
+          <Card.Content>
+            <Text variant="bodyLarge" style={{ color: theme.colors.onSurface, lineHeight: 24 }}>
+              {hasDepression
+                ? 'По результатам скрининга возможны признаки депрессии. Рекомендуем обсудить это со специалистом.'
+                : 'Признаки депрессии по этому опроснику не выявлены. Можно продолжать тренировки.'}
+            </Text>
+          </Card.Content>
+        </Card>
 
-        <TouchableOpacity
-          style={styles.button}
-          onPress={() => {
-            if (!hasDepression) {
-              navigation.navigate('MainTabs');
-            } else {
-              // Здесь можно добавить навигацию к информации о специалистах
-              navigation.navigate('MainTabs');
-            }
-          }}
-        >
-          <Text style={styles.buttonText}>
-            {hasDepression ? 'Понятно' : 'Начать тренировки'}
-          </Text>
-        </TouchableOpacity>
+        <Button mode="contained" icon="home" onPress={() => navigation.navigate('MainTabs', { screen: 'ModeSelect' })} style={styles.btn}>
+          На главную
+        </Button>
       </View>
     </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: colors.background,
-  },
-  content: {
-    flex: 1,
-    padding: spacing.lg,
-    justifyContent: 'center',
-  },
-  title: {
-    ...typography.h1,
-    color: colors.text,
-    textAlign: 'center',
-    marginBottom: spacing.xl,
-  },
-  scoreContainer: {
+  safe: { flex: 1 },
+  hero: {
+    padding: spacing.xl,
     alignItems: 'center',
-    marginBottom: spacing.xl,
+    borderBottomLeftRadius: 24,
+    borderBottomRightRadius: 24,
+    gap: spacing.sm,
   },
-  scoreLabel: {
-    ...typography.body,
-    color: colors.textLight,
-    marginBottom: spacing.xs,
-  },
-  score: {
-    ...typography.h2,
-    color: colors.primary,
-  },
-  resultContainer: {
-    backgroundColor: colors.background,
-    padding: spacing.lg,
-    borderRadius: 12,
-    borderWidth: 1,
-    borderColor: colors.border,
-    marginBottom: spacing.xl,
-  },
-  resultText: {
-    ...typography.body,
-    color: colors.text,
-    textAlign: 'center',
-  },
-  button: {
-    backgroundColor: colors.primary,
-    padding: spacing.lg,
-    borderRadius: 12,
-    alignItems: 'center',
-  },
-  buttonText: {
-    ...typography.button,
-    color: colors.background,
-  },
-}); 
+  heroTitle: { color: '#fff', fontWeight: '700' },
+  score: { color: '#fff', fontWeight: '800' },
+  body: { padding: spacing.md, marginTop: -spacing.lg, gap: spacing.md },
+  card: { borderRadius: radii.lg },
+  btn: { borderRadius: radii.lg },
+});

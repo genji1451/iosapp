@@ -16,6 +16,11 @@ import GDSScreeningResultScreen from '../screens/GDSScreening/GDSScreeningResult
 import VerbalTrainerLessonsScreen from '../screens/VerbalTrainer/VerbalTrainerLessonsScreen';
 import VerbalTrainerLessonScreen from '../screens/VerbalTrainer/VerbalTrainerLessonScreen';
 import VerbalTrainerLessonResultScreen from '../screens/VerbalTrainer/VerbalTrainerLessonResultScreen';
+import VerbalTrainerControlScreen from '../screens/VerbalTrainer/VerbalTrainerControlScreen';
+import VerbalTrainerControlResultScreen from '../screens/VerbalTrainer/VerbalTrainerControlResultScreen';
+import IntonationLessonsScreen from '../screens/IntonationTrainer/IntonationLessonsScreen';
+import IntonationLessonScreen from '../screens/IntonationTrainer/IntonationLessonScreen';
+import IntonationLessonResultScreen from '../screens/IntonationTrainer/IntonationLessonResultScreen';
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
 
@@ -39,9 +44,14 @@ export const RootNavigator = () => {
       <Stack.Screen name="MainTabs" component={MainTabNavigator} />
       <Stack.Screen name="VerbalTrainerMenu" component={VerbalTrainerMenuScreen} />
       <Stack.Screen name="IntonationTrainerMenu" component={IntonationTrainerMenuScreen} />
+      <Stack.Screen name="IntonationTrainerLessons" component={IntonationLessonsScreen} />
+      <Stack.Screen name="IntonationLesson" component={IntonationLessonScreen} />
+      <Stack.Screen name="IntonationLessonResult" component={IntonationLessonResultScreen} />
       <Stack.Screen name="VerbalTrainerLessons" component={VerbalTrainerLessonsScreen} />
       <Stack.Screen name="VerbalTrainerLesson" component={VerbalTrainerLessonScreen} />
       <Stack.Screen name="VerbalTrainerLessonResult" component={VerbalTrainerLessonResultScreen} />
+      <Stack.Screen name="VerbalTrainerControl" component={VerbalTrainerControlScreen} />
+      <Stack.Screen name="VerbalTrainerControlResult" component={VerbalTrainerControlResultScreen} />
     </Stack.Navigator>
   );
 }; 

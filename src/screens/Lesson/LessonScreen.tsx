@@ -1,13 +1,9 @@
 import React, { useState } from 'react';
-import {
-  View,
-  Text,
-  StyleSheet,
-  TouchableOpacity,
-  SafeAreaView,
-  ScrollView,
-} from 'react-native';
-import { colors, spacing, typography } from '../../theme';
+import { View, StyleSheet, ScrollView, Pressable } from 'react-native';
+import { colors, spacing, radii, shadows } from '../../theme';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import { Text, Card, FAB, useTheme } from 'react-native-paper';
+import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 
 const answers = [
   { id: 1, text: 'Вариант 1' },
@@ -18,135 +14,80 @@ const answers = [
   { id: 6, text: 'Вариант 6' },
 ];
 
+const total = 5;
+const current = 3;
+
 export default function LessonScreen() {
   const [isPlaying, setIsPlaying] = useState(false);
-  const currentExercise = 3;
-  const totalExercises = 5;
+  const theme = useTheme();
 
   return (
-    <SafeAreaView style={styles.container}>
-      <View style={styles.header}>
-        <Text style={styles.progress}>
-          Упражнение {currentExercise} из {totalExercises}
-        </Text>
-        <TouchableOpacity style={styles.infoButton}>
-          <Text style={styles.infoButtonText}>Описание</Text>
-        </TouchableOpacity>
+    <SafeAreaView style={[styles.safe, { backgroundColor: theme.colors.background }]} edges={['top', 'bottom']}>
+      <View style={[styles.top, { borderBottomColor: theme.colors.outlineVariant }]}>
+        <Text variant="headlineSmall">Упражнение {current} из {total}</Text>
+        <View style={styles.dots}>
+          {Array.from({ length: total }).map((_, i) => (
+            <View
+              key={i}
+              style={[
+                styles.dot,
+                {
+                  backgroundColor:
+                    i + 1 < current ? colors.success : i + 1 === current ? theme.colors.primary : theme.colors.outlineVariant,
+                },
+              ]}
+            />
+          ))}
+        </View>
       </View>
 
-      <View style={styles.statusContainer}>
-        <View style={[styles.statusIndicator, styles.completed]} />
-        <View style={[styles.statusIndicator, styles.completed]} />
-        <View style={[styles.statusIndicator, styles.current]} />
-        <View style={[styles.statusIndicator, styles.pending]} />
-        <View style={[styles.statusIndicator, styles.pending]} />
-      </View>
+      <ScrollView contentContainerStyle={styles.scroll}>
+        <Pressable onPress={() => setIsPlaying(!isPlaying)}>
+          <Card style={[styles.playCard, shadows.card]} mode="elevated">
+            <Card.Content style={styles.playInner}>
+              <MaterialCommunityIcons
+                name={isPlaying ? 'pause-circle' : 'play-circle'}
+                size={72}
+                color={theme.colors.primary}
+              />
+              <Text variant="titleMedium" style={{ marginTop: spacing.md }}>
+                {isPlaying ? 'Пауза' : 'Воспроизвести'}
+              </Text>
+            </Card.Content>
+          </Card>
+        </Pressable>
 
-      <View style={styles.playButtonContainer}>
-        <TouchableOpacity
-          style={[styles.playButton, isPlaying && styles.playingButton]}
-          onPress={() => setIsPlaying(!isPlaying)}
-        >
-          <Text style={styles.playButtonText}>
-            {isPlaying ? '⏸' : '▶️'}
-          </Text>
-        </TouchableOpacity>
-      </View>
+        <View style={styles.grid}>
+          {answers.map((answer) => (
+            <Card key={answer.id} style={[styles.cell, shadows.soft]} mode="elevated">
+              <Card.Content style={styles.cellInner}>
+                <Text variant="bodySmall" style={{ textAlign: 'center', color: theme.colors.onSurface }}>
+                  {answer.text}
+                </Text>
+              </Card.Content>
+            </Card>
+          ))}
+        </View>
+      </ScrollView>
 
-      <View style={styles.answersGrid}>
-        {answers.map((answer) => (
-          <TouchableOpacity key={answer.id} style={styles.answerButton}>
-            <Text style={styles.answerText}>{answer.text}</Text>
-          </TouchableOpacity>
-        ))}
-      </View>
+      <FAB icon="information-outline" style={[styles.fab, { backgroundColor: theme.colors.secondary }]} onPress={() => {}} small />
     </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: colors.background,
-  },
-  header: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    padding: spacing.lg,
-  },
-  progress: {
-    ...typography.h2,
-    color: colors.text,
-  },
-  infoButton: {
-    padding: spacing.sm,
-    backgroundColor: colors.secondary,
-    borderRadius: 8,
-  },
-  infoButtonText: {
-    color: colors.background,
-    ...typography.button,
-  },
-  statusContainer: {
-    flexDirection: 'row',
-    justifyContent: 'center',
-    padding: spacing.md,
-    gap: spacing.sm,
-  },
-  statusIndicator: {
-    width: 12,
-    height: 12,
-    borderRadius: 6,
-  },
-  completed: {
-    backgroundColor: colors.success,
-  },
-  current: {
-    backgroundColor: colors.primary,
-  },
-  pending: {
-    backgroundColor: colors.border,
-  },
-  playButtonContainer: {
-    alignItems: 'center',
-    marginVertical: spacing.xl,
-  },
-  playButton: {
-    width: 80,
-    height: 80,
-    borderRadius: 40,
-    backgroundColor: colors.primary,
-    alignItems: 'center',
+  safe: { flex: 1 },
+  top: { padding: spacing.md, borderBottomWidth: StyleSheet.hairlineWidth },
+  dots: { flexDirection: 'row', gap: spacing.sm, marginTop: spacing.md },
+  dot: { width: 10, height: 10, borderRadius: 5 },
+  scroll: { padding: spacing.md, paddingBottom: 100, gap: spacing.lg },
+  playCard: { borderRadius: radii.xl },
+  playInner: { alignItems: 'center', paddingVertical: spacing.lg },
+  grid: { flexDirection: 'row', flexWrap: 'wrap', gap: spacing.md, justifyContent: 'space-between' },
+  cell: { width: '47%', borderRadius: radii.md,
+    minHeight: 88,
     justifyContent: 'center',
   },
-  playingButton: {
-    backgroundColor: colors.secondary,
-  },
-  playButtonText: {
-    fontSize: 32,
-  },
-  answersGrid: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    padding: spacing.md,
-    justifyContent: 'space-between',
-  },
-  answerButton: {
-    width: '48%',
-    aspectRatio: 1,
-    backgroundColor: colors.background,
-    borderRadius: 12,
-    marginBottom: spacing.md,
-    alignItems: 'center',
-    justifyContent: 'center',
-    borderWidth: 1,
-    borderColor: colors.border,
-  },
-  answerText: {
-    ...typography.body,
-    color: colors.text,
-    textAlign: 'center',
-    padding: spacing.md,
-  },
-}); 
+  cellInner: { alignItems: 'center', justifyContent: 'center' },
+  fab: { position: 'absolute', right: spacing.md, bottom: spacing.lg },
+});

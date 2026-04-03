@@ -1,14 +1,23 @@
+/** Legacy palette — aligned with `appTheme` for screens using plain StyleSheet */
 export const colors = {
-  primary: '#4CAF50',
-  secondary: '#2196F3',
-  background: '#FFFFFF',
-  text: '#000000',
-  textLight: '#666666',
-  border: '#E0E0E0',
-  error: '#F44336',
-  success: '#4CAF50',
-  warning: '#FFC800',
-  splashBackground: '#2196F3',
+  primary: '#5B5FEF',
+  primaryDark: '#4347D2',
+  secondary: '#0EA5E9',
+  tertiary: '#8B5CF6',
+  background: '#F4F6FB',
+  surface: '#FFFFFF',
+  surfaceMuted: '#E8ECF4',
+  text: '#0F172A',
+  textLight: '#64748B',
+  textMuted: '#94A3B8',
+  border: '#E2E8F0',
+  error: '#DC2626',
+  success: '#16A34A',
+  warning: '#F59E0B',
+  splashBackground: '#4338CA',
+  overlay: 'rgba(15, 23, 42, 0.45)',
+  gradientStart: '#6366F1',
+  gradientEnd: '#8B5CF6',
 };
 
 export const spacing = {
@@ -17,35 +26,63 @@ export const spacing = {
   md: 16,
   lg: 24,
   xl: 32,
+  xxl: 48,
+};
+
+export const radii = {
+  sm: 10,
+  md: 14,
+  lg: 18,
+  xl: 24,
+  full: 9999,
 };
 
 export const typography = {
   h1: {
-    fontSize: 24,
-    fontWeight: 'bold',
+    fontSize: 26,
+    fontWeight: '700' as const,
+    letterSpacing: -0.3,
   },
   h2: {
     fontSize: 20,
-    fontWeight: 'bold',
+    fontWeight: '600' as const,
+    letterSpacing: -0.2,
   },
   body: {
     fontSize: 16,
+    fontWeight: '400' as const,
+    lineHeight: 24,
+  },
+  bodySmall: {
+    fontSize: 14,
+    fontWeight: '400' as const,
+    lineHeight: 20,
   },
   button: {
-    fontSize: 18,
-    fontWeight: 'bold',
+    fontSize: 16,
+    fontWeight: '600' as const,
+    letterSpacing: 0.2,
+  },
+  caption: {
+    fontSize: 12,
+    fontWeight: '500' as const,
+    letterSpacing: 0.4,
   },
 };
 
 export const shadows = {
-  small: {
-    shadowColor: '#000',
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
-    shadowOpacity: 0.25,
-    shadowRadius: 3.84,
-    elevation: 5,
+  card: {
+    shadowColor: '#0F172A',
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.08,
+    shadowRadius: 24,
+    elevation: 4,
   },
-}; 
+  soft: {
+    shadowColor: '#0F172A',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.06,
+    shadowRadius: 12,
+    elevation: 2,
+  },
+};
