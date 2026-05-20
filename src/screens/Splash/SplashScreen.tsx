@@ -42,7 +42,7 @@ export default function SplashScreen() {
         </View>
       </Animated.View>
       <Text variant="headlineLarge" style={styles.title}>
-        Я-СЛЫШУ
+        Тренажер слуха ПК1
       </Text>
       <Text variant="bodyLarge" style={styles.subtitle}>
         Слух · Речь · Уверенность
@@ -73,8 +73,9 @@ const styles = StyleSheet.create({
   title: {
     color: '#fff',
     fontWeight: '800',
-    letterSpacing: 1,
+    letterSpacing: 0.5,
     marginBottom: spacing.sm,
+    textAlign: 'center',
   },
   subtitle: {
     color: 'rgba(255,255,255,0.9)',

@@ -46,7 +46,7 @@ export default function ModeSelectScreen() {
             Добро пожаловать
           </Text>
           <Text variant="displaySmall" style={styles.heroTitle}>
-            Я СЛЫШУ
+            Тренажер слуха ПК1
           </Text>
           <Text variant="bodyLarge" style={styles.heroSub}>
             Персональный тренажёр для развития слухового восприятия и ясности речи.
